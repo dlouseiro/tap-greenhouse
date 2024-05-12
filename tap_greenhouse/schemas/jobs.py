@@ -2,7 +2,7 @@
 
 from singer_sdk import typing as th
 
-from tap_greenhouse.schemas.job_openings import schema as job_opening
+from tap_greenhouse.schemas.job_openings import schema as job_openings
 
 schema = th.PropertiesList(
     th.Property("id", th.IntegerType, required=True),
@@ -105,7 +105,7 @@ schema = th.PropertiesList(
             ),
         ),
     ),
-    th.Property("openings", th.ArrayType(job_opening)),  # use job opening schema here
+    th.Property("openings", th.ArrayType(job_openings)),  # use job opening schema here
 )
 
 schema_dict = schema.to_dict()

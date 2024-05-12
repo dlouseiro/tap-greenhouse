@@ -2,7 +2,7 @@
 from singer_sdk import typing as th
 
 schema = th.PropertiesList(
-    th.Property("id", th.IntegerType),
+    th.Property("id", th.IntegerType, required=True),
     th.Property("offer_id", th.IntegerType),
     th.Property("sequential", th.BooleanType),
     th.Property("version", th.IntegerType),
@@ -16,8 +16,8 @@ schema = th.PropertiesList(
             th.ObjectType(
                 th.Property("id", th.IntegerType),
                 th.Property("approvals_required", th.IntegerType),
-                th.Property("created_at", th.StringType),
-                th.Property("resolved_at", th.StringType, required=False),
+                th.Property("created_at", th.DateTimeType),
+                th.Property("resolved_at", th.DateTimeType),
                 th.Property("priority", th.IntegerType),
                 th.Property("job_id", th.IntegerType),
                 th.Property("offer_id", th.IntegerType, required=False),

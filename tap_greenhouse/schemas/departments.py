@@ -2,7 +2,7 @@
 import singer_sdk.typing as th
 
 schema = th.PropertiesList(
-    th.Property("id", th.IntegerType),
+    th.Property("id", th.IntegerType, required=True),
     th.Property("name", th.StringType),
     th.Property("parent_id", th.IntegerType),
     th.Property("parent_department_external_id", th.StringType),

@@ -7,76 +7,123 @@ from tap_greenhouse import schemas
 from tap_greenhouse.client import GreenhouseStream
 
 
-class ListCandidatesStream(GreenhouseStream):
-    """List Candidates stream."""
+class CandidatesStream(GreenhouseStream):
+    """Candidates stream."""
 
-    name = "list_candidates"
+    name = "candidates"
     path = "candidates"
     primary_keys = ["id"]
-    replication_key = "last_activity"
+    replication_key = "updated_at"
     schema = schemas.candidates
+    replication_key_param_name = "updated_after"
+    accepts_pagination = True
 
     def get_child_context(self, record: dict, context: dict | None) -> dict | None:
         """Get child context for Child Streams."""
         return {
             "candidate_id": record["id"],
+            "last_activity": record["last_activity"],
         }
 
 
-class ListApplicationsStream(GreenhouseStream):
-    """List Applications stream."""
+class CandidateTagsStream(GreenhouseStream):
+    """Candidate Tags Stream."""
 
-    name = "list_applications"
+    name = "candidate_tags"
+    path = "tags/candidate"
+    primary_keys = ["id"]
+    schema = schemas.candidate_tags
+
+
+class ApplicationsStream(GreenhouseStream):
+    """Applications stream."""
+
+    name = "applications"
     path = "applications"
     primary_keys = ["id"]
     replication_key = "last_activity_at"
     schema = schemas.applications
+    replication_key_param_name = "last_activity_after"
+    accepts_pagination = True
 
 
-class ListJobsStream(GreenhouseStream):
-    """List Jobs Stream."""
+class JobsStream(GreenhouseStream):
+    """Jobs Stream."""
 
-    name = "list_jobs"
+    name = "jobs"
     path = "jobs"
     primary_keys = ["id"]
-    replication_key = None
+    replication_key = "updated_at"
     schema = schemas.jobs
+    replication_key_param_name = "updated_after"
+    accepts_pagination = True
 
     def get_child_context(self, record: dict, context: dict | None) -> dict | None:
         """Get child context for Child Streams."""
         return {
             "job_id": record["id"],
+            "job_updated_at": record["updated_at"],
         }
 
 
-class ListJobOpeningStream(GreenhouseStream):
-    """List Job Opening Stream."""
+class JobOpeningsStream(GreenhouseStream):
+    """Job Openings Stream."""
 
-    name = "list_job_openings"
-    parent_stream_type = ListJobsStream
-    ignore_parent_replication_key = True
+    name = "job_openings"
+    parent_stream_type = JobsStream
     path = "jobs/{job_id}/openings"
+    primary_keys = ["id"]
+    replication_key = "job_updated_at"
     schema = schemas.job_openings
+
+    def post_process(
+        self,
+        row: dict,
+        context: dict,
+    ) -> dict | None:
+        """Add fields from parent to child record."""
+        return row.update(
+            {
+                "job_id": context["job_id"],
+                "job_updated_at": context["job_updated_at"],
+            },
+        )
 
 
 class ActivityFeedStream(GreenhouseStream):
     """Candidate Activity feed stream."""
 
     name = "activity_feed"
-    parent_stream_type = ListCandidatesStream
-    ignore_parent_replication_key = True
+    parent_stream_type = CandidatesStream
     path = "candidates/{candidate_id}/activity_feed"
+    primary_keys = ["candidate_id"]
+    replication_key = "last_activity"
     schema = schemas.activity_feed
 
+    def post_process(
+        self,
+        row: dict,
+        context: dict,
+    ) -> dict | None:
+        """Add fields from parent to child record."""
+        row.update(
+            {
+                "candidate_id": context["candidate_id"],
+                "last_activity": context["last_activity"],
+            },
+        )
+        return row
 
-class ListApprovalsStream(GreenhouseStream):
-    """List Approvals for a job."""
 
-    name = "list_approvals"
-    parent_stream_type = ListJobsStream
-    ignore_parent_replication_key = True
+class ApprovalsStream(GreenhouseStream):
+    """Approvals for a job."""
+
+    name = "approvals"
+    parent_stream_type = JobsStream
     path = "jobs/{job_id}/approval_flows"
-    schema = schemas.list_approvals
+    primary_keys = ["id"]
+    replication_key = "job_updated_at"
+    schema = schemas.approvals
 
     def get_child_context(self, record: dict, context: dict | None) -> dict | None:
         """Get child context for Child Streams."""
@@ -84,24 +131,40 @@ class ListApprovalsStream(GreenhouseStream):
             "id": record["id"],
         }
 
+    def post_process(
+        self,
+        row: dict,
+        context: dict,
+    ) -> dict | None:
+        """Add fields from parent to child record."""
+        row.update(
+            {
+                "job_updated_at": context["job_updated_at"],
+            },
+        )
+        return row
 
-class ApprovalFlowStream(GreenhouseStream):
-    """Get: Retrieve Approval Flow."""
 
-    name = "retrieve_approval_flow"
-    parent_stream_type = ListApprovalsStream
-    ignore_parent_replication_key = True
+class ApprovalFlowsStream(GreenhouseStream):
+    """Get: Retrieve Approval Flows."""
+
+    name = "approval_flows"
+    parent_stream_type = ApprovalsStream
     path = "approval_flows/{id}"
+    primary_keys = ["id"]
     schema = schemas.approval_flows
 
 
-class ListUsersStream(GreenhouseStream):
-    """List Users Stream."""
+class UsersStream(GreenhouseStream):
+    """Users Stream."""
 
-    name = "list_users"
+    name = "users"
     path = "users"
-    replication_key = "updated_after"
+    primary_keys = ["id"]
+    replication_key = "updated_at"
     schema = schemas.users
+    replication_key_param_name = "updated_after"
+    accepts_pagination = True
 
     def get_child_context(self, record: dict, context: dict | None) -> dict | None:
         """Get child context for Child Streams."""
@@ -111,160 +174,181 @@ class ListUsersStream(GreenhouseStream):
 
 
 class PendingApprovalsForUserStream(GreenhouseStream):
-    """List Pending Approvals for user Stream."""
+    """Pending Approvals for user Stream."""
 
     name = "pending_approvals_for_user"
-    parent_stream_type = ListUsersStream
+    parent_stream_type = UsersStream
     ignore_parent_replication_key = True
+    primary_keys = ["id"]
     path = "users/{user_id}/pending_approvals"
     schema = schemas.pending_approvals_for_user
 
 
-class ListCloseReasonStream(GreenhouseStream):
+class CloseReasonsStream(GreenhouseStream):
     """Close Reasons Stream."""
 
-    name = "list_close_reason"
+    name = "close_reasons"
     path = "close_reasons"
+    primary_keys = ["id"]
     schema = schemas.close_reasons
 
 
-class ListCustomFieldStream(GreenhouseStream):
+class CustomFieldsStream(GreenhouseStream):
     """Custom Fields Stream."""
 
-    name = "list_custom_field"
+    name = "custom_fields"
     path = "custom_fields"
+    primary_keys = ["id"]
     schema = schemas.custom_fields
 
 
-class ListDemographicQuestionStream(GreenhouseStream):
-    """List Demographic Question Stream."""
+class DemographicQuestionsStream(GreenhouseStream):
+    """Demographic Question Stream."""
 
-    name = "list_demographic_question"
+    name = "demographic_questions"
     path = "demographics/questions"
     primary_keys = ["id"]
-    schema = schemas.list_demographic_questions
+    schema = schemas.demographic_questions
+    accepts_pagination = True
 
 
-class ListDepartmentStream(GreenhouseStream):
+class DepartmentsStream(GreenhouseStream):
     """Department Stream."""
 
-    name = "list_department"
+    name = "departments"
     path = "departments"
     primary_keys = ["id"]
     schema = schemas.departments
+    accepts_pagination = True
 
 
-class ListEEOCStream(GreenhouseStream):
-    """List EEOC Stream."""
+class EEOCStream(GreenhouseStream):
+    """EEOC Stream."""
 
-    name = "list_eeoc"
+    name = "eeoc"
     path = "eeoc"
+    replication_key = "submitted_at"
+    primary_keys = ["application_id"]
     schema = schemas.eeoc
+    replication_key_param_name = "submitted_after"
+    accepts_pagination = True
 
 
-class ListJobPostStream(GreenhouseStream):
-    """Job Post Stream."""
+class JobPostsStream(GreenhouseStream):
+    """Job Posts Stream."""
 
-    name = "list_job_post"
+    name = "job_posts"
     path = "job_posts"
     primary_keys = ["id"]
+    replication_key = "updated_at"
     schema = schemas.job_posts
+    replication_key_param_name = "updated_after"
+    accepts_pagination = True
 
 
-class ListJobStageStream(GreenhouseStream):
-    """Job Stage Stream."""
+class JobStagesStream(GreenhouseStream):
+    """Job Stages Stream."""
 
-    name = "list_job_stage"
+    name = "job_stages"
     path = "job_stages"
     primary_keys = ["id"]
+    replication_key = "updated_at"
     schema = schemas.job_stages
+    replication_key_param_name = "updated_after"
+    accepts_pagination = True
 
 
-class ListOfferStream(GreenhouseStream):
+class OffersStream(GreenhouseStream):
     """Offer Stream."""
 
-    name = "list_offer"
+    name = "offers"
     path = "offers"
     primary_keys = ["id"]
-    schema = schemas.offer
+    replication_key = "updated_at"
+    schema = schemas.offers
+    replication_key_param_name = "updated_after"
+    accepts_pagination = True
 
 
-class ListOfficeStream(GreenhouseStream):
-    """Office Stream."""
+class OfficesStream(GreenhouseStream):
+    """Offices Stream."""
 
-    name = "list_office"
+    name = "office"
     path = "offices"
     primary_keys = ["id"]
     schema = schemas.offices
+    accepts_pagination = True
 
 
-class ListProspectPoolsStream(GreenhouseStream):
-    """List Prospect Pools stream."""
+class ProspectPoolsStream(GreenhouseStream):
+    """Prospect Pools stream."""
 
-    name = "list_prospect_pools"
+    name = "prospect_pools"
     path = "prospect_pools"
     primary_keys = ["id"]
     schema = schemas.prospect_pools
+    accepts_pagination = True
 
 
-class ListRejectionReasonStream(GreenhouseStream):
+class RejectionReasonsStream(GreenhouseStream):
     """Rejection Reasons Stream."""
 
-    name = "list_rejection_reason"
+    name = "rejection_reasons"
     path = "rejection_reasons"
     primary_keys = ["id"]
     schema = schemas.rejection_reasons
+    accepts_pagination = True
 
 
-class ListScheduledInterviewStream(GreenhouseStream):
+class ScheduledInterviewsStream(GreenhouseStream):
     """Scheduled Interviews Stream."""
 
-    name = "list_scheduled_interview"
+    name = "scheduled_interviews"
     path = "scheduled_interviews"
     primary_keys = ["id"]
+    replication_key = "updated_at"
     schema = schemas.scheduled_interviews
+    replication_key_param_name = "updated_after"
+    accepts_pagination = True
 
 
-class ListScorecardStream(GreenhouseStream):
-    """Scorecard Stream."""
+class ScorecardsStream(GreenhouseStream):
+    """Scorecards Stream."""
 
-    name = "list_scorecard"
+    name = "scorecards"
     path = "scorecards"
     primary_keys = ["id"]
-    schema = schemas.list_scorecards
+    replication_key = "updated_at"
+    schema = schemas.scorecards
+    replication_key_param_name = "updated_after"
+    accepts_pagination = True
 
 
-class ListSourceStream(GreenhouseStream):
+class SourcesStream(GreenhouseStream):
     """Sources Stream."""
 
-    name = "list_source"
+    name = "sources"
     path = "sources"
     primary_keys = ["id"]
-    schema = schemas.list_sources
+    schema = schemas.sources
+    accepts_pagination = True
 
 
-class ListCandidateTagStream(GreenhouseStream):
-    """Candidate Tag Stream."""
+class UserJobPermissionsStream(GreenhouseStream):
+    """User job permissions Stream."""
 
-    name = "list_candidate_tag"
-    path = "tags/candidate"
-    primary_keys = ["id"]
-    schema = schemas.tags
-
-
-class ListUserJobPermissionsStream(GreenhouseStream):
-    """List user job permissions Stream."""
-
-    name = "list_user_job_permissions"
-    parent_stream_type = ListUsersStream
+    name = "user_job_permissions"
+    parent_stream_type = UsersStream
     ignore_parent_replication_key = True
     path = "users/{user_id}/permissions/jobs"
-    schema = schemas.user_permissions
+    primary_keys = ["id", "job_id", "user_role_id"]
+    schema = schemas.user_job_permissions
 
 
-class UserRoleStream(GreenhouseStream):
+class UserRolesStream(GreenhouseStream):
     """User Roles Stream."""
 
-    name = "user_role"
+    name = "user_roles"
     path = "user_roles"
-    schema = schemas.user_role
+    primary_keys = ["id"]
+    schema = schemas.user_roles

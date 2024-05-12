@@ -1,9 +1,11 @@
-"""Job Opening Schema."""
+"""Job Openings Schema."""
 
 from singer_sdk import typing as th
 
 schema = th.PropertiesList(
     th.Property("id", th.IntegerType, required=True),
+    th.Property("job_id", th.IntegerType, required=True),
+    th.Property("job_updated_at", th.DateTimeType, required=True),
     th.Property("opening_id", th.StringType),
     th.Property("status", th.StringType),
     th.Property("opened_at", th.DateTimeType),

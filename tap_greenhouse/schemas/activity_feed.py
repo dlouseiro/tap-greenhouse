@@ -2,12 +2,13 @@
 from singer_sdk import typing as th
 
 schema = th.PropertiesList(
+    th.Property("candidate_id", th.IntegerType, required=True),
     th.Property(
         "notes",
         th.ArrayType(
             th.ObjectType(
                 th.Property("id", th.IntegerType),
-                th.Property("created_at", th.StringType),
+                th.Property("created_at", th.DateTimeType),
                 th.Property("body", th.StringType),
                 th.Property(
                     "user",
@@ -29,7 +30,7 @@ schema = th.PropertiesList(
         th.ArrayType(
             th.ObjectType(
                 th.Property("id", th.IntegerType),
-                th.Property("created_at", th.StringType),
+                th.Property("created_at", th.DateTimeType),
                 th.Property("subject", th.StringType),
                 th.Property("body", th.StringType),
                 th.Property("to", th.StringType),
@@ -53,7 +54,7 @@ schema = th.PropertiesList(
         th.ArrayType(
             th.ObjectType(
                 th.Property("id", th.IntegerType),
-                th.Property("created_at", th.StringType),
+                th.Property("created_at", th.DateTimeType),
                 th.Property("subject", th.StringType),
                 th.Property("body", th.StringType),
                 th.Property(
@@ -69,6 +70,7 @@ schema = th.PropertiesList(
             ),
         ),
     ),
+    th.Property("last_activity", th.DateTimeType),
 )
 
 schema_dict = schema.to_dict()

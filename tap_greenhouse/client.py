@@ -24,9 +24,9 @@ class GreenhouseStream(RESTStream):
     # the field in the stream (e.g. to filter the candidates by updated_at
     # one must provide the parameter: updated_after=<replication key value>)
     replication_key_param_name: str | None = None
+
     accepts_pagination: bool = False
     page_size: int = 500
-    # uncomment the following for loose type checking
 
     @property
     def url_base(self) -> str:
