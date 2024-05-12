@@ -4,17 +4,13 @@
 
 Built with the [Meltano Tap SDK](https://sdk.meltano.com) for Singer Taps.
 
+Forked from https://github.com/rawwar/tap-greenhouse.
+
 <!--
 
 Developer TODO: Update the below as needed to correctly describe the install procedure. For instance, if you do not have a PyPi repo, or if you want users to directly install from your git repo, you can modify this step as appropriate.
 
 ## Installation
-
-Install from PyPi:
-
-```bash
-pipx install tap-greenhouse
-```
 
 Install from GitHub:
 
