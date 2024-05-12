@@ -3,7 +3,7 @@
 from singer_sdk import typing as th
 
 schema = th.PropertiesList(
-    th.Property("id", th.IntegerType),
+    th.Property("id", th.IntegerType, required=True),
     th.Property("application_id", th.IntegerType),
     th.Property("external_event_id", th.StringType),
     th.Property(
@@ -21,8 +21,8 @@ schema = th.PropertiesList(
     th.Property("location", th.StringType),
     th.Property("video_conferencing_url", th.StringType),
     th.Property("status", th.StringType),
-    th.Property("created_at", th.StringType),
-    th.Property("updated_at", th.StringType),
+    th.Property("created_at", th.DateTimeType),
+    th.Property("updated_at", th.DateTimeType),
     th.Property(
         "interview",
         th.ObjectType(

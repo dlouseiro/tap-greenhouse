@@ -3,9 +3,9 @@
 from singer_sdk import typing as th
 
 schema = th.PropertiesList(
-    th.Property("id", th.IntegerType),
-    th.Property("updated_at", th.StringType),
-    th.Property("created_at", th.StringType),
+    th.Property("id", th.IntegerType, required=True),
+    th.Property("updated_at", th.DateTimeType),
+    th.Property("created_at", th.DateTimeType),
     th.Property("interview", th.StringType),
     th.Property(
         "interview_step",
@@ -16,7 +16,7 @@ schema = th.PropertiesList(
     ),
     th.Property("candidate_id", th.IntegerType),
     th.Property("application_id", th.IntegerType),
-    th.Property("interviewed_at", th.StringType),
+    th.Property("interviewed_at", th.DateTimeType),
     th.Property(
         "submitted_by",
         th.ObjectType(
@@ -37,7 +37,7 @@ schema = th.PropertiesList(
             th.Property("employee_id", th.StringType),
         ),
     ),
-    th.Property("submitted_at", th.StringType),
+    th.Property("submitted_at", th.DateTimeType),
     th.Property("overall_recommendation", th.StringType),
     th.Property(
         "attributes",

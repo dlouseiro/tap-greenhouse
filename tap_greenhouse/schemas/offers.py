@@ -3,7 +3,7 @@
 from singer_sdk import typing as th
 
 schema = th.PropertiesList(
-    th.Property("id", th.IntegerType),
+    th.Property("id", th.IntegerType, required=True),
     th.Property("version", th.IntegerType),
     th.Property("application_id", th.IntegerType),
     th.Property("job_id", th.IntegerType),
@@ -14,8 +14,8 @@ schema = th.PropertiesList(
             th.Property("id", th.IntegerType),
             th.Property("opening_id", th.StringType),
             th.Property("status", th.StringType),
-            th.Property("opened_at", th.StringType),
-            th.Property("closed_at", th.StringType, required=False),
+            th.Property("opened_at", th.DateTimeType),
+            th.Property("closed_at", th.DateTimeType),
             th.Property("application_id", th.IntegerType, required=False),
             th.Property(
                 "close_reason",
@@ -26,11 +26,11 @@ schema = th.PropertiesList(
             ),
         ),
     ),
-    th.Property("created_at", th.StringType),
-    th.Property("updated_at", th.StringType),
-    th.Property("sent_at", th.StringType),
-    th.Property("resolved_at", th.StringType),
-    th.Property("starts_at", th.StringType),
+    th.Property("created_at", th.DateTimeType),
+    th.Property("updated_at", th.DateTimeType),
+    th.Property("sent_at", th.DateTimeType),
+    th.Property("resolved_at", th.DateTimeType),
+    th.Property("starts_at", th.DateTimeType),
     th.Property("status", th.StringType),
     th.Property(
         "custom_fields",

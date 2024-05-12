@@ -3,13 +3,13 @@
 from singer_sdk import typing as th
 
 schema = th.PropertiesList(
-    th.Property("id", th.IntegerType),
+    th.Property("id", th.IntegerType, required=True),
     th.Property("name", th.StringType),
     th.Property("first_name", th.StringType),
     th.Property("last_name", th.StringType),
     th.Property("primary_email_address", th.StringType),
-    th.Property("updated_at", th.StringType),
-    th.Property("created_at", th.StringType),
+    th.Property("updated_at", th.DateTimeType),
+    th.Property("created_at", th.DateTimeType),
     th.Property("disabled", th.BooleanType),
     th.Property("site_admin", th.BooleanType),
     th.Property("emails", th.ArrayType(th.StringType)),
