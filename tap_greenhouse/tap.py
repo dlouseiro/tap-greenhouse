@@ -27,6 +27,13 @@ class Tapgreenhouse(Tap):
             default="https://harvest.greenhouse.io/v1/",
             description="The url for the API service",
         ),
+        th.Property(
+            "start_date",
+            th.DateTimeType,
+            required=True,
+            description="Date from which the sync should start",
+            examples=["2024-05-01T00:00:00Z"],
+        ),
     ).to_dict()
 
     def discover_streams(self) -> list[streams.GreenhouseStream]:

@@ -19,6 +19,13 @@ SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
 class GreenhouseStream(RESTStream):
     """greenhouse stream class."""
 
+    # Name of the API parameter to be applied when filtering
+    # by the replication key. These usually do not match with the name of
+    # the field in the stream (e.g. to filter the candidates by updated_at
+    # one must provide the parameter: updated_after=<replication key value>)
+    replication_key_param_name: str | None = None
+    accepts_pagination: bool = False
+    page_size: int = 500
     # uncomment the following for loose type checking
 
     @property
@@ -65,7 +72,7 @@ class GreenhouseStream(RESTStream):
 
     def get_url_params(
         self,
-        context: dict | None,  # noqa: ARG002
+        context: dict | None,
         next_page_token: Any | None,
     ) -> dict[str, Any]:
         """Return a dictionary of values to be used in URL parameterization.
@@ -82,6 +89,22 @@ class GreenhouseStream(RESTStream):
             return dict(parse_qsl(next_page_token.query))
         if self.replication_key:
             params["order_by"] = self.replication_key
+            if self.replication_key_param_name is not None:
+                params.update(
+                    {
+                        self.replication_key_param_name: self.get_starting_timestamp(
+                            context,
+                        ),
+                    },
+                )
+
+        if self.accepts_pagination:
+            params.update(
+                {
+                    "per_page": self.page_size,
+                },
+            )
+
         return params
 
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
